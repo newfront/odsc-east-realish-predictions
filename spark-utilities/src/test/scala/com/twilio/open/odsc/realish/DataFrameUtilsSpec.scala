@@ -56,6 +56,32 @@ class DataFrameUtilsSpec extends FunSuite with Matchers with SharedSparkSql {
     allColumns.contains("tags_stress-free") shouldBe true
   }
 
+  test("should expand Array values in DataFrame using target list") {
+    val spark = sparkSql
+    import spark.implicits._
+
+    val examples = Seq(
+      UserPersonality("uuid1", "Scott", Array("old","stressed")),
+      UserPersonality("uuid2", "Joe", Array("young","stress-free"))
+    )
+
+    // convert to Dataset
+    val users = spark.createDataset(examples)
+
+    // expand the array
+    val expandedTags = DataFrameUtils.expandArray[String](users.toDF(), col("tags"), Some(
+      Seq("old", "stressed", "young", "stress-free")
+    ))
+
+    val allColumns = expandedTags.columns.toSet
+
+    allColumns.size shouldEqual 7
+    allColumns.contains("tags_old") shouldBe true
+    allColumns.contains("tags_stressed") shouldBe true
+    allColumns.contains("tags_young") shouldBe true
+    allColumns.contains("tags_stress-free") shouldBe true
+  }
+
   test("should flatten deeply nested struct") {
     val spark = sparkSql
     import spark.implicits._

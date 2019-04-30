@@ -35,13 +35,21 @@ object DataFrameUtils {
     * @param col The DataFrame Column
     * @return The DataFrame with additional expanded array fields
     */
-  def expandArray[T](df: DataFrame, col: Column)(implicit valueEncoder: Encoder[T]): DataFrame = {
+  def expandArray[T](df: DataFrame, col: Column, possibleValues: Option[Seq[T]] = None)(implicit valueEncoder: Encoder[T]): DataFrame = {
     val colName = col.toString()
-    val values = df
-      .selectExpr(s"explode($colName) as $colName")
-      .select(col).map({ case Row(s:T) => s })
-      .collect()
-      .toSeq
+
+    // note: this is expensive on very large datasets
+
+    val values = possibleValues match {
+      case Some(seq) =>
+        seq
+      case None =>
+        df
+          .selectExpr(s"explode($colName) as $colName")
+          .select(col).map({ case Row(s:T) => s })
+          .collect()
+          .toSeq
+    }
 
     val expandedRows = values.foldLeft[DataFrame](df)( (d, v: T) => {
       val column = colName + "_" + v

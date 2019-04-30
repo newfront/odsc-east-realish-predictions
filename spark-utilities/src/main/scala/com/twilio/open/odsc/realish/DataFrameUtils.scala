@@ -1,5 +1,8 @@
 package com.twilio.open.odsc.realish
 
+import java.sql.Timestamp
+import java.time.{Instant, ZoneOffset, ZonedDateTime}
+
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -27,7 +30,7 @@ object DataFrameUtils {
 
   /* Encapsulates the p1, p25, median, p75, p90, p95, p99 */
   private[odsc] final val DefaultPercentileProbabilities: Array[Double] =
-    Array(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99)
+    Array(0.25, 0.5, 0.75)
 
   /**
     * Given an input DataFrame
@@ -129,22 +132,28 @@ object DataFrameUtils {
   def percentiles(df: DataFrame, col: Column,
                   probabilities: Array[Double] = DefaultPercentileProbabilities,
                   relativeError: Double = 0.25)(implicit spark: SparkSession): DataFrame = {
+    val colName = col.toString()
     val result = df
-      .select(col.cast("Double")).as("value")
-      .stat.approxQuantile("value", probabilities, relativeError)
+      .select(colName)
+      .stat.approxQuantile(colName, probabilities, relativeError)
 
     // iterate over the probabilities to create a dataframe with the p(1),p(25) etc
     val zipped = probabilities
       .sorted.map(v => (v * 100).toInt)
       .zip(result)
       .map( tuple => {
-
         val probability = s"p${tuple._1}"
         Row(probability, tuple._2)
       })
 
     spark.createDataFrame(spark.sparkContext.parallelize(zipped), PercentileSchema)
 
+  }
+
+  def epochMillisToTimestamp(timeMillis: Long): java.sql.Timestamp = {
+    // explicitly cast to UTC and then back to Instant - for non-utc timestamps
+    val zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), ZoneOffset.UTC).toInstant
+    Timestamp.from(zdt)
   }
 
 }

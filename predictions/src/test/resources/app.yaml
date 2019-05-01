@@ -1,0 +1,37 @@
+sparkAppConfig:
+  appName: "spark-structured-predictions"
+  core:
+    spark.sql.parquet.compression.codec: "snappy"
+    spark.sql.shuffle.partitions: 32
+    spark.scheduler.mode: "FIFO"
+    spark.port.maxRetries: "64"
+    spark.cores.max: "6"
+    spark.executor.cores: "2"
+    spark.memory.fraction: 0.9
+    spark.driver.cores: "2"
+    spark.driver.memory: "2g"
+    spark.driver.port: "7078"
+    spark.fileserver.port: "7270"
+    spark.broadcast.port: "7334"
+    spark.blockManager.port: "7206"
+    spark.kryo.registrationRequired: "false"
+    spark.serializer: "org.apache.spark.serializer.KryoSerializer"
+    spark.submit.deployMode: "client"
+    spark.locality.wait: 2000
+    spark.task.reaper.enabled: true
+    spark.task.reaper.pollingInterval: 20s
+    spark.task.reaper.threadDump: true
+    spark.task.reaper.killTimeout: "1m"
+    mapreduce.fileoutputcommitter.algorithm.version: 2
+    spark.hadoop.fs.defaultFS: "hdfs://localhost:9000"
+    spark.odsc.predictions.inputDir: ""
+    spark.odsc.predictions.outputDir: ""
+    spark.odsc.predictions.checkpointPath: ""
+    spark.odsc.predictions.maxFilesPerTrigger: 1
+
+chronicler:
+  streamName: "prediction-stream"
+  triggerInterval: "5 minutes"
+  triggerEnabled: true
+  windowInterval: "10 minutes"
+  watermarkInterval: "30 minutes"

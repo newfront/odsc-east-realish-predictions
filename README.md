@@ -1,6 +1,11 @@
 # odsc-east-realish-predictions
 Material for the 2019 ODSC East Workshop (Realish Time Predictive Analytics with Spark Structured Streaming)
 
+### Prior Workshop Materials
+[ODSC West - Protobuf on Kafka with Data Sketching](https://github.com/newfront/odsc-west-streaming-trends/tree/master/part3/streaming-trend-discovery)
+
+[ODSC Warmup Webinar](https://github.com/newfront/odsc-east2019-warmup)
+
 #### Technologies
 1. [Spark 2.4.0](https://www.apache.org/dyn/closer.lua/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz)
 2. [Zeppelin 0.8.1](http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.8.1/zeppelin-0.8.1-bin-netinst.tgz)
@@ -69,3 +74,21 @@ export ZEPPELIN_INTERPRETER_OUTPUT_LIMIT=2048000
 4. click `save` and the interpreter will restart with your updated settings.
 
 [Zeppelin Spark Doc](https://zeppelin.apache.org/docs/0.8.1/interpreter/spark.html)
+
+#### Add custom jar to the Zeppelin Startup Path
+1. `sudo vim /usr/local/zeppelin-0.8.1/conf/interpreter.json`
+
+2. Add the workshop jar
+~~~json
+{
+  "spark.jars": {
+    "name": "spark.jars",
+    "value": "/path/to/.m2/repository/com/twilio/open/odsc/spark-utilities/0.1.0-SNAPSHOT/spark-utilities-0.1.0-SNAPSHOT.jar",
+    "type": "string"
+  }
+}
+~~~
+
+3. restart zeppelin
+
+4. Now `DataFrameUtils` can be imported directly into the session. This is equivelant to `--jars /path/to/jar` when submitting a spark application
